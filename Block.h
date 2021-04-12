@@ -27,7 +27,7 @@ struct Block {
 
         for (int i = 0; i < transactionCount; i++) {
             staticTransaction.read(stream);
-            transactionHandler(staticTransaction);
+            transactionHandler(staticTransaction, *this);
 
          /*   for (int i = 0; i < staticTransaction.outputCount; i++) {
                 if (staticTransaction.outputs[i].publicKey == nullptr) {

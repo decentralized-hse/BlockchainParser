@@ -23,14 +23,16 @@ struct Transaction {
     uint32_t lockTime;
 
 #ifdef NEED_TRANSACTION_HASH
+private:
     void* begin;
     void* _offset_before_tx_witnesses = nullptr;
     void* end;
     uint8_t			transactionHash[32];
     bool hashCalculated = false;
+public:
 #endif
 
-    inline uint8_t* getHash() {
+    inline const unsigned char * getHash() {
 #ifdef NEED_TRANSACTION_HASH
 
         if (!hashCalculated) {

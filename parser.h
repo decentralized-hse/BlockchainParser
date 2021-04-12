@@ -32,13 +32,13 @@ int filesCount() {
 
 
 #define MAGIC_ID 0xD9B4BEF9
-Block parseBlock(BitcoinStream& stream) {
+void parseBlock(BitcoinStream& stream) {
     uint32_t magicId = stream.readU32();
     if (magicId != MAGIC_ID) {
         WARN("invalid magicid");
+        return;
     }
     Block block(stream);
-    return block;
 }
 
 void parseFile(int fileId) {
