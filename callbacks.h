@@ -57,35 +57,57 @@ struct TransactionData {
     uint64_t value;
 };
 
+// map[hash[0]][transactionIndex]
+class FastTransactionMap {
+    std::array<std::array<std::vector<TransactionData>, 256>, 256> internalData;
+public:
+    void addTransactionData(TransactionData data) {
+        internalData[data.hash[0]][data.outputId].push_back(data);
+    }
+
+    TransactionData* findTransactionData(uint8_t* transactionHash, uint8_t transactionIndex) {
+        for (TransactionData& data : internalData[transactionHash[0]][transactionIndex]) {
+            if (memcmp(transactionHash, &data.hash, 32) == 0) {
+                return &data;
+            }
+        }
+        return nullptr;
+    }
+
+    size_t size() {
+        return internalData.size();
+    }
+};
+
 struct ExtractInputsCallback: TransactionCallback {
-    std::vector<TransactionData>& outputTransactions;
-    explicit ExtractInputsCallback(std::vector<TransactionData>& _outputTransactions):
+    FastTransactionMap& outputTransactions;
+    explicit ExtractInputsCallback(FastTransactionMap& _outputTransactions):
             outputTransactions(_outputTransactions) {
 
     }
 
     void gotTransaction(Transaction& transaction, Block& block) override {
         for (int i = 0; i < transaction.inputCount; i++) {
-            for (int j = 0; j < outputTransactions.size(); j++) {
-                if (transaction.inputs[i].transactionIndex == outputTransactions[j].outputId &&
-                    memcmp(transaction.inputs[i].transactionHash, &outputTransactions[j].hash, 32) == 0) {
+            TransactionData* data;
+            if ((data = outputTransactions.findTransactionData(transaction.inputs[i].transactionHash,
+                                                              transaction.inputs[i].transactionIndex)))
+            {
 //                    printTransactionInfo(transaction, block);
                     printTransactionHash(transaction);
                     printBlockTimestamp(block);
-                    printBTCValue(outputTransactions[j].value);
+                    printBTCValue(data->value);
                     std::cout << "\n";
 
                    /* std::cout << "prev: ";
                     printReverseHash(transaction.inputs[i].transactionHash);
                     std::cout << "\n\n";*/
-                }
             }
         }
     }
 };
 
 struct ExtractOutputsCallback: TransactionCallback {
-    std::vector<TransactionData> extractedTransactions;
+    FastTransactionMap extractedTransactions;
     WalletComparator comparator;
     ExtractOutputsCallback(Wallet wallet): comparator(wallet.asString()) {
     }
@@ -96,8 +118,13 @@ struct ExtractOutputsCallback: TransactionCallback {
                 uint8_t* hash = const_cast<uint8_t *>(transaction.getHash());
                 std::array<uint8_t, 32> copy{};
                 std::copy(hash, hash + 32, copy.begin());
-                extractedTransactions.push_back({copy, static_cast<uint64_t>(i),
+                extractedTransactions.addTransactionData({copy, static_cast<uint64_t>(i),
                                                  transaction.outputs[i].value});
+
+                printTransactionHash(transaction);
+                printBlockTimestamp(block);
+                printBTCValue(transaction.outputs[i].value);
+                std::cout << "\n";
             }
         }
     }

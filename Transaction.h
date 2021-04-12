@@ -72,7 +72,11 @@ public:
 
         inputCount = stream.readVarint();
         if (inputCount > MAX_INPUT_OUTPUT_COUNT) {
-            throw logic_error("too many inputs: " + to_string(inputCount));
+            WARN("too many inputs: " + to_string(inputCount));
+            while (inputCount > MAX_INPUT_OUTPUT_COUNT) {
+                inputs[0].read(stream); // just skip them
+                inputCount--;
+            }
         }
         for (int i = 0; i < inputCount; i++) {
             inputs[i].read(stream);
@@ -80,7 +84,11 @@ public:
 
         outputCount = stream.readVarint();
         if (outputCount > MAX_INPUT_OUTPUT_COUNT) {
-            throw logic_error("too many outputs: " + to_string(outputCount));
+            WARN("too many outputs: " + to_string(outputCount));
+            while (outputCount > MAX_INPUT_OUTPUT_COUNT) {
+                outputs[0].read(stream); // just skip them
+                outputCount--;
+            }
         }
         for (int i = 0; i < outputCount; i++) {
             outputs[i].read(stream);

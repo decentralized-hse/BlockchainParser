@@ -3,8 +3,8 @@
 #include "iostream"
 
 #define NEED_TRANSACTION_HASH
-//#define WARN(x) std::cerr << x;
-#define WARN(x)
+#define WARN(x) std::cerr << x;
+//#define WARN(x)
 #define ONE_BTC 100000000.0
 
 #include "Transaction.h"

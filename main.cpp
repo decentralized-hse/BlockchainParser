@@ -18,23 +18,26 @@ int main() {
     int files_count = filesCount();
     cout << "Files in dir: " << files_count << endl;
 
-    freopen("../res.txt", "w", stdout);
-  //  for (int i : tq::trange(2300, files_count)) {
-  //  for (int i = 0; i < files_count; i++) {
 
     ExtractOutputsCallback callback(Wallet(FBK_WALLET));
     setTransactionCallback(&callback);
     std::cerr << "Extracting outputs with wallet " << callback.comparator.trackedWallet << std::endl;
-//    for (int i = 2300; i < 1; i++) {
-    for (int i : tq::trange(2400, files_count)) {
+
+    freopen("../res_outputs.txt", "w", stdout);
+    std::cout << "Transactions to wallet " << callback.comparator.trackedWallet << std::endl;
+    for (int i : tq::trange(0, files_count)) {
         parseFile(i);
     }
     std::cerr << "Extracted " << callback.extractedTransactions.size() << " transactions." << std::endl;
 
+
     std::cerr << "Extracting input transactions with same outputs" << std::endl;
+
+    freopen("../res_inputs.txt", "w", stdout);
+    std::cout << "Transactions from wallet " << callback.comparator.trackedWallet << std::endl;
     ExtractInputsCallback inputsCallback(callback.extractedTransactions);
     setTransactionCallback(&inputsCallback);
-    for (int i : tq::trange(2400, files_count)) {
+    for (int i : tq::trange(0, files_count)) {
         parseFile(i);
     }
     std::cerr << "Done" << std::endl;
